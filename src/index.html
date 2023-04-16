@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../dist/output.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-800">
+    <div class="container flex flex-col items-center py-16 mx-auto w-2/4
+     bg-gray-700 shadow-xl text-slate-300 rounded-xl">
+        <h1 class="text-3xl font-bold">
+            Tabela FIPE
+        </h1>
+        <form class="mx-auto w-full pt-10 px-28 sm:w-3/4" id="formFipe">
+            <div class="w-full mt-4">
+                <div class="lg:w-full text-left">
+                    <label for="selectMarca">Marca</label>
+                </div>
+                <div class="lg:w-full text-left">
+                    <select class="mt-2 w-full rounded border-grey-50 px-4 py-3 font-body text-black" id="selectMarca">
+                        <option value="">Selecione uma marca</option>
+                    </select>
+                </div>
+            </div>
+            <div class="w-full mt-4">
+                <div class="lg:w-full text-left">
+                    <label for="selectModelo">Modelo</label>
+                </div>
+                <div class="lg:w-full text-left">
+                    <select class="mt-2 w-full rounded border-grey-50 px-4 py-3 font-body text-black" id="selectModelo">
+                    </select>
+                </div>
+            </div>
+            <div class="w-full mt-4">
+                <div class="lg:w-full text-left">
+                    <label for="selectAno">Ano</label>
+                </div>
+                <div class="lg:w-full text-left">
+                    <select class="mt-2 w-full rounded border-grey-50 px-4 py-3 font-body text-black" id="selectAno">
+                    </select>
+                </div>
+            </div>
+            <button
+                class="mx-auto mt-6 flex items-center justify-center rounded bg-blue-400 px-8 py-3 font-header text-lg font-bold uppercase text-white hover:bg-grey-20" id="buttonSubmit">
+                Consultar
+                <i class="bx bx-chevron-right relative -right-2 text-3xl"></i>
+            </button>
+        </form>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
