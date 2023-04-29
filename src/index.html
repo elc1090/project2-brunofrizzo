@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="../dist/output.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="bg-gray-800">
@@ -60,8 +62,29 @@
                 <i class="bx bx-chevron-right relative -right-2 text-3xl"></i>
             </button>
         </form>
-        <div class="mx-auto w-full pt-10 px-28 sm:w-3/4" >
-            
+        <div class="mx-auto w-full pt-5 pb-5 px-14 sm:w-3/4 mt-4 bg-slate-100 text-gray-700 rounded-xl hidden" id="divResultado" >
+            <h2 class="text-center text-2xl pb-5 font-medium">RESULTADO</h2>
+
+            <table class="w-full">
+                <tr>
+                    <td>Modelo</td>
+                    <td class="text-right" id="modeloCarro">TOYOTA ETIOS</td>
+                </tr>
+                <tr>
+                    <td>Ano</td>
+                    <td class="text-right" id="anoCarro">2014</td>
+                </tr>
+                <tr>
+                    <td>Preço</td>
+                    <td class="text-right" id="precoCarro">R$83400,00</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="text-center">
+                        Histórico
+                        <canvas id="priceChart"></canvas>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 

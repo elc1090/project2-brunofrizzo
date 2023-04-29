@@ -5,56 +5,44 @@ const selectMarca = document.getElementById('selectMarca');
 const selectModelo = document.getElementById('selectModelo');
 const selectAno = document.getElementById('selectAno');
 const buttonSubmit = document.getElementById('buttonSubmit');
+const divResultado = document.getElementById('divResultado');
+
+var anos;
+var chart = null;
 
 // Listen for submissions on GitHub username input form
 formFipe.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    divResultado.style.display = 'none';
+
     let tipoVeiculo = selectTipo.value;
     let marca = selectMarca.value;
     let modelo = selectModelo.value;
-    let ano = selectAno.value;
+    let ano = selectAno.value.split('_')[1];
+    let indiceAno = selectAno.value.split('_')[0];
 
     if (tipoVeiculo && marca && modelo && ano) {
-        buttonSubmit.value = 'Buscando...';
+        buttonSubmit.textContent = 'Buscando...';
         buttonSubmit.disabled = true;
 
         buscarHistoricoPrecos(tipoVeiculo, marca, modelo, ano)
             .then(response => response.json()) // parse response into json
-            .then(data => {
-                console.log(data);
-                return;
+            .then(async data => {
+                var colunaModeloCarro = document.getElementById('modeloCarro');
+                var colunaAnoCarro = document.getElementById('anoCarro');
+                var colunaPrecoCarro = document.getElementById('precoCarro');
 
-                if (data) {
-                    let ul = document.getElementById('repoCommits');
-                    ul.innerHTML = "";
+                colunaModeloCarro.innerHTML = data.Marca + ' ' + data.Modelo;
+                colunaAnoCarro.innerHTML = data.AnoModelo;
+                colunaPrecoCarro.innerHTML = data.Valor;
 
-                    for (let i in data) {
-                        let li = document.createElement('li');
-                        li.classList.add('list-group-item')
-
-                        let commitDate = new Date(data[i].commit.committer.date).toLocaleString();
-
-                        li.innerHTML = (`
-                        <div class='parent'>
-                            <div class='child' style="display: inline-block; vertical-align: middle;">
-                                <img style="width: 50px; height:50px; border-radius: 12%;" src="${data[i].author.avatar_url}">
-                            </div>
-                            <div class='child' style="display: inline-block; vertical-align: middle;">
-                                <strong>${data[i].author.login}</strong>
-                                <br>
-                                ${commitDate}
-                            </div>
-                        </div>
-                        <p><br><strong>Commit:</strong> ${data[i].commit.message}</p>
-                    `);
-
-                        ul.appendChild(li);
-                    }
-                }
+                await montarGrafico(tipoVeiculo, marca, modelo, indiceAno, data.AnoModelo, data.Valor);
 
                 buttonSubmit.disabled = false;
-                buttonSubmit.value = 'Buscar';
+                buttonSubmit.textContent = 'Consultar';
+                divResultado.style.display = 'block';
+                divResultado.scrollIntoView();
             })
     }
 })
@@ -134,11 +122,13 @@ selectModelo.addEventListener('change', (e) => {
     buscarAnos(codigoMarca, codigoModelo)
         .then(response => response.json())
         .then(data => {
+            anos = data;
+            
             if (data) {
                 selectAno.innerHTML = '';
-                data.forEach(element => {
+                data.forEach((element,index) => {
                     let option = document.createElement('option');
-                    option.value = element.codigo;
+                    option.value = index + '_' +element.codigo;
                     option.innerHTML = element.nome;
                     selectAno.appendChild(option);
                 })
@@ -148,7 +138,6 @@ selectModelo.addEventListener('change', (e) => {
             buttonSubmit.disabled = false;
         })
 })
-
 
 function buscarMarcas(tipo) {
     return Promise.resolve(fetch(`https://parallelum.com.br/fipe/api/v1/${tipo}/marcas`));
@@ -165,4 +154,93 @@ function buscarAnos(codigoMarca, codigoModelo) {
 function buscarHistoricoPrecos(tipo, codigoMarca, codigoModelo, ano) {
     //GET: https://parallelum.com.br/fipe/api/v1/carros/marcas/59/modelos/5940/anos/2014-3
     return Promise.resolve(fetch(`https://parallelum.com.br/fipe/api/v1/${tipo}/marcas/${codigoMarca}/modelos/${codigoModelo}/anos/${ano}`));
+}
+
+async function montarGrafico(tipo, codigoMarca, codigoModelo, indiceAno, ano, valor) {
+    var indices = [];
+    var labels = [];
+    var dadosGrafico = [];
+
+    labels.push(ano);
+    dadosGrafico.push(reaisParaCentavos(valor.split("R$ ")[1]));
+    indiceAno++;
+
+    if (indiceAno <= anos.length) {
+        for(let i = 0; i < 5; i++) {
+            if (anos[indiceAno]) {
+                indices.push(indiceAno)
+        
+                await buscarHistoricoPrecos(tipo, codigoMarca, codigoModelo, anos[indiceAno].codigo)
+                    .then(response => response.json())
+                    .then(data => {
+                        let valorCarro = data.Valor.split("R$ ")[1];
+                        dadosGrafico.push(reaisParaCentavos(valorCarro))
+                        labels.push(data.AnoModelo)
+                    })
+
+                indiceAno++;
+            }
+        }
+
+        preencherGrafico(labels, dadosGrafico);
+    }
+}
+
+function preencherGrafico(labels, data) {
+    const ctx = document.getElementById('priceChart');
+
+    if (chart)
+        chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels.reverse(),
+            datasets: [{
+                label: 'Valor',
+                data: data.reverse(),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function (value, index, values) {
+                            let valueWithoutDecimal = parseInt(value/100);
+                            return valueWithoutDecimal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.dataset.label || '';
+
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                let = valueWithoutDecimal = parseInt(context.parsed.y / 100);
+                                label += new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valueWithoutDecimal);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function reaisParaCentavos(value) {
+    var int = value.split(",")[0];
+    var decimal = value.split(",")[1];
+
+    int = int.replace(".", "");
+    var cents = parseInt(decimal) + (parseInt(int) * 100);
+
+    return cents;
 }
