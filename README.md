@@ -1,6 +1,6 @@
 CONSULTA TABELA FIPE
 
-![Screenshot do projeto](https://project1-brunofrizzo.vercel.app/print-projeto.png "Screenshot do projeto").
+![Screenshot do projeto](https://elc1090.github.io/project2-brunofrizzo/src/assets/print.png "Screenshot do projeto").
 
 Acesso: https://elc1090.github.io/project2-brunofrizzo/src/index.html
 
